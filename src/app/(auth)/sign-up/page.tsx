@@ -1,0 +1,130 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import InputField from "@/components/forms/InputField";
+import SelectField from "@/components/forms/SelectField";
+import {
+  INVESTMENT_GOALS,
+  PREFERRED_INDUSTRIES,
+  RISK_TOLERANCE_OPTIONS,
+} from "@/lib/contants";
+import { CountrySelectField } from "@/components/forms/CountrySelectField";
+import FooterLink from "@/components/forms/FooterLink";
+
+const SignUp = () => {
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<SignUpFormData>({
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      country: "US",
+      investmentGoals: "Growth",
+      riskTolerance: "Medium",
+      preferredIndustry: "Technology",
+    },
+    mode: "onBlur",
+  });
+  const onSubmit = async (data: SignUpFormData) => {
+    try {
+      console.log(data);
+    } catch (error) {
+      console.error("Sign up failed:", error);
+    }
+  };
+
+  return (
+    <>
+      <h1 className="form-title">Sign Up & Personalize </h1>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <InputField
+          name="fullName"
+          label="Full Name"
+          placeholder="John Doe"
+          register={register}
+          error={errors.fullName}
+          validation={{ required: "Full name is required", minLength: 2 }}
+        />
+        <InputField
+          name="email"
+          label="Email"
+          placeholder="johndoe@email.com"
+          register={register}
+          error={errors.email}
+          validation={{
+            required: "Email is required",
+            pattern: /^\S+@\S+$/i,
+            message: "Email Address is required",
+          }}
+        />
+        <InputField
+          name="password"
+          label="Password"
+          type="password"
+          placeholder="Enter a Strong Password"
+          register={register}
+          error={errors.password}
+          validation={{ required: "Password is required", minLength: 8 }}
+        />
+
+        <CountrySelectField
+          name="country"
+          control={control}
+          error={errors.country}
+          label="Country"
+          required
+        />
+
+        <SelectField
+          name="investmentGoals"
+          label="Investment Goals"
+          placeholder="Select your investment goal"
+          control={control}
+          error={errors.investmentGoals}
+          required
+          options={INVESTMENT_GOALS}
+        />
+
+        <SelectField
+          name="riskTolerance"
+          label="Risk Tolerance"
+          placeholder="Select your risk level"
+          control={control}
+          error={errors.riskTolerance}
+          required
+          options={RISK_TOLERANCE_OPTIONS}
+        />
+
+        <SelectField
+          name="preferredIndustry"
+          label="Preffered Industry"
+          placeholder="Select your preferred industry"
+          control={control}
+          error={errors.preferredIndustry}
+          required
+          options={PREFERRED_INDUSTRIES}
+        />
+
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="yellow-btn w-full mt-5"
+        >
+          {isSubmitting ? "Creating Account" : "Start Your Investing Journey"}
+        </Button>
+
+        <FooterLink
+          text="Already have an account?"
+          linkText="Sign in"
+          href="/sign-in"
+        />
+      </form>
+    </>
+  );
+};
+export default SignUp;

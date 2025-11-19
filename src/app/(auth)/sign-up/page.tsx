@@ -11,8 +11,13 @@ import {
 } from "@/lib/contants";
 import { CountrySelectField } from "@/components/forms/CountrySelectField";
 import FooterLink from "@/components/forms/FooterLink";
+import { signUpWithEmail } from "@/lib/actions/auth.actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const SignUp = () => {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -30,11 +35,23 @@ const SignUp = () => {
     },
     mode: "onBlur",
   });
+
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      console.log(data);
-    } catch (error) {
-      console.error("Sign up failed:", error);
+      const result = await signUpWithEmail(data);
+      if (result.success) {
+        router.push("/");
+      } else {
+        toast.error("Sign up failed", {
+          description: result.error || "Failed to create an account.",
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Sign up failed", {
+        description:
+          e instanceof Error ? e.message : "Failed to create an account.",
+      });
     }
   };
 
@@ -102,7 +119,7 @@ const SignUp = () => {
 
         <SelectField
           name="preferredIndustry"
-          label="Preffered Industry"
+          label="Prefered Industry"
           placeholder="Select your preferred industry"
           control={control}
           error={errors.preferredIndustry}

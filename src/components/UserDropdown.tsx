@@ -14,13 +14,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import NavItems from "@/components/NavItems";
 import { signOut } from "@/lib/actions/auth.actions";
+import { toast } from "sonner";
 
 const UserDropdown = ({ user }: { user: User }) => {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/sign-in");
+    const result = await signOut();
+    if (result.success) {
+      router.push("/sign-in");
+    } else {
+      console.error("Sign out failed", result.error);
+      toast.error("Failed to sign out. Please try again.");
+    }
   };
 
   return (
@@ -64,7 +70,7 @@ const UserDropdown = ({ user }: { user: User }) => {
           <LogOut className="h-4 w-4 mr-2 hidden sm:block" />
           Sign Out
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="hidden sm:blockbg-gray-600" />
+        <DropdownMenuSeparator className="hidden sm:block bg-gray-600" />
 
         <nav className="sm:hidden">
           <NavItems />

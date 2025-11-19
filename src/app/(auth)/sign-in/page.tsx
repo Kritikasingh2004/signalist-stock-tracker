@@ -29,7 +29,7 @@ const SignIn = () => {
         router.push("/");
       } else {
         toast.error("Sign in failed", {
-          description: result.error,
+          description: result.error || "Failed to sign in.",
         });
       }
     } catch (e) {
@@ -75,7 +75,7 @@ const SignIn = () => {
         </Button>
 
         <FooterLink
-          text="Dont have an account?"
+          text="Don't have an account?"
           linkText="Sign Up"
           href="/sign-up"
         />

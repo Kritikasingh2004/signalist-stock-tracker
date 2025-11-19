@@ -34,7 +34,10 @@ export const signUpWithEmail = async ({
     return { success: true, data: response };
   } catch (e) {
     console.log("Sign up failed", e);
-    return { success: false, error: "Sign up failed" };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Sign up failed",
+    };
   }
 };
 
@@ -47,7 +50,10 @@ export const signInWithEmail = async ({ email, password }: SignInFormData) => {
     return { success: true, data: response };
   } catch (e) {
     console.log("Sign in failed", e);
-    return { success: false, error: "Sign in failed" };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Sign in failed",
+    };
   }
 };
 
@@ -57,6 +63,9 @@ export const signOut = async () => {
     return { success: true };
   } catch (e) {
     console.log("Sign out failed", e);
-    return { success: false, error: "Sign out failed" };
+    return {
+      success: false,
+      error: e instanceof Error ? e.message : "Sign out failed",
+    };
   }
 };

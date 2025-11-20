@@ -119,7 +119,7 @@ const SignUp = () => {
 
         <SelectField
           name="preferredIndustry"
-          label="Prefered Industry"
+          label="Preferred Industry"
           placeholder="Select your preferred industry"
           control={control}
           error={errors.preferredIndustry}

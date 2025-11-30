@@ -31,7 +31,7 @@ const WatchListBtn = ({
             ? `Remove ${symbol} from watchlist`
             : ` Add ${symbol} to watchlist`
         }
-        aira-label={
+        aria-label={
           added
             ? `Remove ${symbol} from watchlist`
             : ` Add ${symbol} to watchlist`

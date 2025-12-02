@@ -5,8 +5,10 @@ import { WatchlistTable } from "@/components/WatchlistTable";
 import { getWatchlistWithData } from "@/lib/actions/watchlist.actions";
 
 const Watchlist = async () => {
-  const watchlist = await getWatchlistWithData();
-  const initialStocks = await searchStocks();
+  const [watchlist, initialStocks] = await Promise.all([
+    getWatchlistWithData(),
+    searchStocks(),
+  ]);
 
   if (watchlist.length === 0)
     return (

@@ -59,13 +59,12 @@ const WatchListBtn = ({
     }
   };
 
-  const debouncedToggle = useDebounce(toggleWatchlist, 300);
+  const debouncedToggle = useDebounce(toggleWatchlist, 120);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
 
-    setAdded(!added);
     debouncedToggle();
   };
 
@@ -86,7 +85,10 @@ const WatchListBtn = ({
         className={`watchlist-icon-btn ${added ? "watchlist-icon-added" : ""}`}
         onClick={handleClick}
       >
-        <Star fill={added ? "currentColor" : "none"} />
+        <Star
+          fill={added ? "currentColor" : "none"}
+          className={isLoading ? "animate-pulse" : ""}
+        />
       </button>
     );
   }

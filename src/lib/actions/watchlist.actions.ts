@@ -138,6 +138,7 @@ export const getWatchlistWithData = async () => {
           currentPrice: stockData.currentPrice,
           priceFormatted: stockData.priceFormatted,
           changePercent: stockData.changePercent,
+          changeFormatted: stockData.changeFormatted,
           marketCap: stockData.marketCapFormatted,
           peRatio: stockData.peRatio,
         };

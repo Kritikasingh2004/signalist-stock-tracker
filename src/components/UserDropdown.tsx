@@ -43,7 +43,7 @@ const UserDropdown = ({
           className="flex items-center gap-3 text-gray-400 hover:text-yellow-500"
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://imgs.search.brave.com/QJbiNRIjqzDXpRuYueFUYyKDCZRZFIri-l0coQMK8Xc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9paDEu/cmVkYnViYmxlLm5l/dC9pbWFnZS41Njcx/MjI3NTM5LjAwMjEv/c3Qsc21hbGwsNTA3/eDUwNy1wYWQsNjAw/eDYwMCxmOGY4Zjgu/anBn" />
+            <AvatarImage src="" />
             <AvatarFallback className="bg-yellow-500 text-yellow-900 text-sm font-bold">
               {user.name[0]}
             </AvatarFallback>
@@ -54,7 +54,7 @@ const UserDropdown = ({
         <DropdownMenuLabel>
           <div className="flex relative items-center gap-3 py-2">
             <Avatar className="h-10 w-10">
-              <AvatarImage src="https://imgs.search.brave.com/QJbiNRIjqzDXpRuYueFUYyKDCZRZFIri-l0coQMK8Xc/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9paDEu/cmVkYnViYmxlLm5l/dC9pbWFnZS41Njcx/MjI3NTM5LjAwMjEv/c3Qsc21hbGwsNTA3/eDUwNy1wYWQsNjAw/eDYwMCxmOGY4Zjgu/anBn" />
+              <AvatarImage src="" />
               <AvatarFallback className="bg-yellow-500 text-yellow-900 text-sm font-bold">
                 {user.name[0]}
               </AvatarFallback>

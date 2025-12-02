@@ -8,10 +8,26 @@ import {
   TECHNICAL_ANALYSIS_WIDGET_CONFIG,
 } from "@/lib/contants";
 import WatchListBtn from "@/components/WatchListBtn";
+import { getStockDetails } from "@/lib/actions/finnhub.actions";
+import { getUserWatchlist } from "@/lib/actions/watchlist.actions";
+import { WatchlistItem } from "@/database/models/watchlist.model";
+import { notFound } from "next/navigation";
 
 export default async function StockDetails({ params }: StockDetailsPageProps) {
   const { symbol } = await params;
   const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
+
+  let stockData;
+  try {
+    stockData = await getStockDetails(symbol.toUpperCase());
+  } catch {
+    notFound();
+  }
+  const watchlist = await getUserWatchlist();
+
+  const isInWatchlist = watchlist.some(
+    (item: WatchlistItem) => item.symbol === symbol.toUpperCase(),
+  );
 
   return (
     <div className="flex min-h-screen p-4 md:p-6 lg:p-8">
@@ -43,9 +59,10 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <WatchListBtn
-              symbol={symbol.toUpperCase()}
-              company={symbol.toUpperCase()}
-              isInWatchlist={false}
+              symbol={symbol}
+              company={stockData.company}
+              isInWatchlist={isInWatchlist}
+              type="button"
             />
           </div>
           <TradingViewWidget

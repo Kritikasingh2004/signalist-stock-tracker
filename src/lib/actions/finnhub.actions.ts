@@ -21,7 +21,7 @@ const NEXT_PUBLIC_FINNHUB_API_KEY =
 
 async function fetchJSON<T>(
   url: string,
-  revalidateSeconds?: number,
+  revalidateSeconds?: number
 ): Promise<T> {
   const options: RequestInit & { next?: { revalidate?: number } } =
     revalidateSeconds
@@ -38,8 +38,18 @@ async function fetchJSON<T>(
 
 export { fetchJSON };
 
+type FinnhubProfile2 = {
+  name?: string;
+  ticker?: string;
+  exchange?: string;
+};
+
+type FinnhubSearchResultWithExchange = FinnhubSearchResult & {
+  __exchange?: string;
+};
+
 export async function getNews(
-  symbols?: string[],
+  symbols?: string[]
 ): Promise<MarketNewsArticle[]> {
   try {
     const range = getDateRange(5);
@@ -60,14 +70,16 @@ export async function getNews(
       await Promise.all(
         cleanSymbols.map(async (sym) => {
           try {
-            const url = `${FINNHUB_BASE_URL}/company-news?symbol=${encodeURIComponent(sym)}&from=${range.from}&to=${range.to}&token=${token}`;
+            const url = `${FINNHUB_BASE_URL}/company-news?symbol=${encodeURIComponent(
+              sym
+            )}&from=${range.from}&to=${range.to}&token=${token}`;
             const articles = await fetchJSON<RawNewsArticle[]>(url, 300);
             perSymbolArticles[sym] = (articles || []).filter(validateArticle);
           } catch (e) {
             console.error("Error fetching company news for", sym, e);
             perSymbolArticles[sym] = [];
           }
-        }),
+        })
       );
 
       const collected: MarketNewsArticle[] = [];
@@ -117,31 +129,27 @@ export async function getNews(
   }
 }
 
-export const searchStocks = cache(
-  async (query?: string): Promise<StockWithWatchlistStatus[]> => {
+const searchStocksCached = cache(
+  async (
+    userEmail: string,
+    query?: string
+  ): Promise<StockWithWatchlistStatus[]> => {
     try {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
-      if (!session?.user) redirect("/sign-in");
-
-      const userWatchlistSymbols = await getWatchlistSymbolsByEmail(
-        session.user.email,
-      );
+      const userWatchlistSymbols = await getWatchlistSymbolsByEmail(userEmail);
 
       const token = process.env.FINNHUB_API_KEY ?? NEXT_PUBLIC_FINNHUB_API_KEY;
       if (!token) {
         // If no token, log and return empty to avoid throwing per requirements
         console.error(
           "Error in stock search:",
-          new Error("FINNHUB API key is not configured"),
+          new Error("FINNHUB API key is not configured")
         );
         return [];
       }
 
       const trimmed = typeof query === "string" ? query.trim() : "";
 
-      let results: FinnhubSearchResult[];
+      let results: FinnhubSearchResultWithExchange[];
 
       if (!trimmed) {
         // Fetch top 10 popular symbols' profiles
@@ -149,15 +157,23 @@ export const searchStocks = cache(
         const profiles = await Promise.all(
           top.map(async (sym) => {
             try {
-              const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(sym)}&token=${token}`;
+              const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(
+                sym
+              )}&token=${token}`;
               // Revalidate every hour
-              const profile = await fetchJSON<any>(url, 3600);
-              return { sym, profile } as { sym: string; profile: any };
+              const profile = await fetchJSON<FinnhubProfile2>(url, 3600);
+              return { sym, profile } as {
+                sym: string;
+                profile: FinnhubProfile2;
+              };
             } catch (e) {
               console.error("Error fetching profile2 for", sym, e);
-              return { sym, profile: null } as { sym: string; profile: any };
+              return { sym, profile: null } as {
+                sym: string;
+                profile: FinnhubProfile2 | null;
+              };
             }
-          }),
+          })
         );
 
         results = profiles
@@ -167,21 +183,20 @@ export const searchStocks = cache(
               profile?.name || profile?.ticker || undefined;
             const exchange: string | undefined = profile?.exchange || undefined;
             if (!name) return undefined;
-            const r: FinnhubSearchResult = {
+            const r: FinnhubSearchResultWithExchange = {
               symbol,
               description: name,
               displaySymbol: symbol,
               type: "Common Stock",
+              __exchange: exchange,
             };
-            // We don't include exchange in FinnhubSearchResult type, so carry via mapping later using profile
-            // To keep pipeline simple, attach exchange via closure map stage
-            // We'll reconstruct exchange when mapping to final type
-            (r as any).__exchange = exchange; // internal only
             return r;
           })
-          .filter((x): x is FinnhubSearchResult => Boolean(x));
+          .filter((x): x is FinnhubSearchResultWithExchange => Boolean(x));
       } else {
-        const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(trimmed)}&token=${token}`;
+        const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(
+          trimmed
+        )}&token=${token}`;
         const data = await fetchJSON<FinnhubSearchResponse>(url, 1800);
         results = Array.isArray(data?.result) ? data.result : [];
       }
@@ -192,9 +207,7 @@ export const searchStocks = cache(
           const name = r.description || upper;
           const exchangeFromDisplay =
             (r.displaySymbol as string | undefined) || undefined;
-          const exchangeFromProfile = (r as any).__exchange as
-            | string
-            | undefined;
+          const exchangeFromProfile = r.__exchange;
           const exchange = exchangeFromDisplay || exchangeFromProfile || "US";
           const type = r.type || "Stock";
           const item: StockWithWatchlistStatus = {
@@ -202,9 +215,7 @@ export const searchStocks = cache(
             name,
             exchange,
             type,
-            isInWatchlist: userWatchlistSymbols.includes(
-              r.symbol.toUpperCase(),
-            ),
+            isInWatchlist: userWatchlistSymbols.includes(upper),
           };
           return item;
         })
@@ -215,8 +226,20 @@ export const searchStocks = cache(
       console.error("Error in stock search:", err);
       return [];
     }
-  },
+  }
 );
+
+export async function searchStocks(
+  query?: string
+): Promise<StockWithWatchlistStatus[]> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) redirect("/sign-in");
+
+  return searchStocksCached(session.user.email, query);
+}
 
 export const getStockDetails = cache(async (symbol: string) => {
   const cleanSymbol = symbol.trim().toUpperCase();
@@ -229,17 +252,23 @@ export const getStockDetails = cache(async (symbol: string) => {
     const [quote, profile, financials] = await Promise.all([
       fetchJSON(
         // Price data - no caching for accuracy
-        `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(cleanSymbol)}&token=${token}`,
+        `${FINNHUB_BASE_URL}/quote?symbol=${encodeURIComponent(
+          cleanSymbol
+        )}&token=${token}`
       ),
       fetchJSON(
         // Company info - cache 1hr (rarely changes)
-        `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(cleanSymbol)}&token=${token}`,
-        3600,
+        `${FINNHUB_BASE_URL}/stock/profile2?symbol=${encodeURIComponent(
+          cleanSymbol
+        )}&token=${token}`,
+        3600
       ),
       fetchJSON(
         // Financial metrics (P/E, etc.) - cache 30min
-        `${FINNHUB_BASE_URL}/stock/metric?symbol=${encodeURIComponent(cleanSymbol)}&metric=all&token=${token}`,
-        1800,
+        `${FINNHUB_BASE_URL}/stock/metric?symbol=${encodeURIComponent(
+          cleanSymbol
+        )}&metric=all&token=${token}`,
+        1800
       ),
     ]);
 
@@ -264,7 +293,7 @@ export const getStockDetails = cache(async (symbol: string) => {
       changeFormatted: formatChangePercent(changePercent),
       peRatio: peRatio?.toFixed(1) || "-",
       marketCapFormatted: formatMarketCapValue(
-        profileData?.marketCapitalization || 0,
+        profileData?.marketCapitalization || 0
       ),
     };
   } catch (error) {

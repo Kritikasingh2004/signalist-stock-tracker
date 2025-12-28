@@ -50,16 +50,16 @@ const WatchListBtn = ({
             description: `${company} ${
               addedRef.current ? "removed from" : "added to"
             } your watchlist.`,
-          },
+          }
         );
 
         onWatchlistChange?.(symbol, newState);
       } else {
-        toast.error("Item already in watchlist");
+        toast.error(result.error || "Failed to update watchlist");
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to update watchlist",
+        error instanceof Error ? error.message : "Failed to update watchlist"
       );
       console.error(error);
     } finally {

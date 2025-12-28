@@ -68,7 +68,7 @@ export const addToWatchlist = async (symbol: string, company: string) => {
     return { success: true, message: "Stock added to watchlist" };
   } catch (error) {
     console.error("Error adding to watchlist:", error);
-    throw new Error("Failed to add stock to watchlist");
+    return { success: false, error: "Failed to add stock to watchlist" };
   }
 };
 
@@ -89,7 +89,7 @@ export const removeFromWatchlist = async (symbol: string) => {
     return { success: true, message: "Stock removed from watchlist" };
   } catch (error) {
     console.error("Error removing from watchlist:", error);
-    throw new Error("Failed to remove stock from watchlist");
+    return { success: false, error: "Failed to remove stock from watchlist" };
   }
 };
 export const getUserWatchlist = async () => {
@@ -109,7 +109,7 @@ export const getUserWatchlist = async () => {
     return JSON.parse(JSON.stringify(watchlist));
   } catch (error) {
     console.error("Error fetching watchlist:", error);
-    throw new Error("Failed to fetch watchlist");
+    return { success: false, error: "Failed to fetch watchlist" };
   }
 };
 export const getWatchlistWithData = async () => {
@@ -161,6 +161,6 @@ export const getWatchlistWithData = async () => {
     return JSON.parse(JSON.stringify(stocksWithData));
   } catch (error) {
     console.error("Error loading watchlist:", error);
-    throw new Error("Failed to fetch watchlist");
+    return { success: false, error: "Failed to fetch watchlist" };
   }
 };

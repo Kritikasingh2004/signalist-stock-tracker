@@ -100,6 +100,8 @@ export const getUserWatchlist = async () => {
 
     if (!session?.user) redirect("/sign-in");
 
+    await connectToDatabase();
+
     const watchlist = await Watchlist.find({ userId: session.user.id })
       .sort({ addedAt: -1 })
       .lean();
@@ -117,6 +119,8 @@ export const getWatchlistWithData = async () => {
     });
 
     if (!session?.user) redirect("/sign-in");
+
+    await connectToDatabase();
 
     const watchlist = await Watchlist.find({ userId: session.user.id })
       .sort({ addedAt: -1 })

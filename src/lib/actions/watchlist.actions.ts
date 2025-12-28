@@ -10,7 +10,7 @@ import { getStockDetails } from "@/lib/actions/finnhub.actions";
 
 // Returns array of uppercased stock symbols in user's watchlist
 export const getWatchlistSymbolsByEmail = async (
-  email: string,
+  email: string
 ): Promise<string[]> => {
   if (!email) return [];
 
@@ -40,6 +40,7 @@ export const getWatchlistSymbolsByEmail = async (
 
 export const addToWatchlist = async (symbol: string, company: string) => {
   try {
+    await connectToDatabase();
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -125,24 +126,32 @@ export const getWatchlistWithData = async () => {
 
     const stocksWithData = await Promise.all(
       watchlist.map(async (item) => {
-        const stockData = await getStockDetails(item.symbol);
-
-        if (!stockData) {
+        try {
+          const stockData = await getStockDetails(item.symbol);
+          return {
+            company: stockData.company,
+            symbol: stockData.symbol,
+            currentPrice: stockData.currentPrice,
+            priceFormatted: stockData.priceFormatted,
+            changePercent: stockData.changePercent,
+            changeFormatted: stockData.changeFormatted,
+            marketCap: stockData.marketCapFormatted,
+            peRatio: stockData.peRatio,
+          };
+        } catch {
           console.warn(`Failed to fetch data for ${item.symbol}`);
-          return item;
+          return {
+            company: item.company,
+            symbol: item.symbol,
+            currentPrice: undefined,
+            priceFormatted: "—",
+            changePercent: undefined,
+            changeFormatted: "—",
+            marketCap: "—",
+            peRatio: "—",
+          };
         }
-
-        return {
-          company: stockData.company,
-          symbol: stockData.symbol,
-          currentPrice: stockData.currentPrice,
-          priceFormatted: stockData.priceFormatted,
-          changePercent: stockData.changePercent,
-          changeFormatted: stockData.changeFormatted,
-          marketCap: stockData.marketCapFormatted,
-          peRatio: stockData.peRatio,
-        };
-      }),
+      })
     );
 
     return JSON.parse(JSON.stringify(stocksWithData));

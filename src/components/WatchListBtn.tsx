@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addToWatchlist,
   removeFromWatchlist,
@@ -26,33 +26,41 @@ const WatchListBtn = ({
   }, [isInWatchlist]);
 
   const label = useMemo(() => {
-    if (type == "icon") return added ? "" : "";
+    if (type == "icon") return "";
     return added ? "Remove from Watchlist" : "Add to Watchlist";
   }, [added, type]);
+
+  const addedRef = useRef(added);
+  addedRef.current = added;
 
   const toggleWatchlist = async () => {
     setIsLoading(true);
     try {
-      const result = added
+      const result = addedRef.current
         ? await removeFromWatchlist(symbol)
         : await addToWatchlist(symbol, company);
 
       if (result.success) {
-        const newState = !added;
+        const newState = !addedRef.current;
         setAdded(newState);
 
-        toast.success(added ? "Removed from watchlist" : "Added to watchlist", {
-          description: `${company} ${
-            added ? "removed from" : "added to"
-          } your watchlist.`,
-        });
+        toast.success(
+          addedRef.current ? "Removed from watchlist" : "Added to watchlist",
+          {
+            description: `${company} ${
+              addedRef.current ? "removed from" : "added to"
+            } your watchlist.`,
+          },
+        );
 
-        onWatchlistChange?.(symbol, !added);
+        onWatchlistChange?.(symbol, newState);
       } else {
-        toast.error("Failed to update watchlist");
+        toast.error("Item already in watchlist");
       }
     } catch (error) {
-      toast.error("An error occurred. Please try again.");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update watchlist",
+      );
       console.error(error);
     } finally {
       setIsLoading(false);

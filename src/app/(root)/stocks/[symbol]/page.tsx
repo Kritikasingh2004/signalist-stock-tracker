@@ -21,12 +21,12 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
   try {
     stockData = await getStockDetails(symbol.toUpperCase());
   } catch {
-    notFound();
+    return notFound();
   }
   const watchlist = await getUserWatchlist();
 
   const isInWatchlist = watchlist.some(
-    (item: WatchlistItem) => item.symbol === symbol.toUpperCase(),
+    (item: WatchlistItem) => item.symbol === symbol.toUpperCase()
   );
 
   return (
@@ -60,7 +60,7 @@ export default async function StockDetails({ params }: StockDetailsPageProps) {
           <div className="flex items-center justify-between">
             <WatchListBtn
               symbol={symbol}
-              company={stockData.company}
+              company={stockData.company || "Company"}
               isInWatchlist={isInWatchlist}
               type="button"
             />

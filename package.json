@@ -20,7 +20,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "inngest": "^3.45.1",
+    "inngest": "^3.54.2",
     "lucide-react": "^0.553.0",
     "mongodb": "^6.20.0",
     "mongoose": "^8.19.4",
